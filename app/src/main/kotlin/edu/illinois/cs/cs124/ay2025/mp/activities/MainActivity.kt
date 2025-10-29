@@ -40,10 +40,10 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        load_summaries()
+        loadSummaries()
     }
 
-    private fun load_summaries() {
+    private fun loadSummaries() {
         Client.getSummaries { result ->
             try {
                 summaries = result.value
