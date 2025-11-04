@@ -103,8 +103,49 @@ tasks.register("showAndroidStudioTerminalInstructions") {
 
     doLast {
         val javaHome = System.getProperty("java.home")
+
+        @Suppress("SystemGetProperty")
         val fileSeparator = System.getProperty("file.separator")
         val javaBin = "$javaHome${fileSeparator}bin"
+
+        @Suppress("SystemGetProperty")
+        val pathSeparator = System.getProperty("path.separator")
+
+        val currentPath = System.getenv("PATH") ?: ""
+
+        val newPath =
+            if (currentPath.isNotEmpty()) {
+                "$javaBin$pathSeparator$currentPath"
+            } else {
+                javaBin
+            }
+
+        val escapedPath = newPath.replace(";", "\\;")
+
+        val pathDirs = newPath.split(pathSeparator).filter { it.isNotEmpty() }
+        val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+        val executableExtensions =
+            if (isWindows) {
+                listOf("", ".exe", ".cmd", ".bat")
+            } else {
+                listOf("")
+            }
+
+        fun findExecutable(name: String): String? {
+            for (dir in pathDirs) {
+                for (ext in executableExtensions) {
+                    val executable = File("$dir$fileSeparator$name$ext")
+                    if (executable.exists() && executable.canExecute()) {
+                        return executable.absolutePath
+                    }
+                }
+            }
+            return null
+        }
+
+        val javaPath = findExecutable("java")
+        val nodePath = findExecutable("node")
+        val claudePath = findExecutable("claude")
 
         println("\n" + "=".repeat(80))
         println("Android Studio Terminal Java Configuration")
@@ -114,12 +155,35 @@ tasks.register("showAndroidStudioTerminalInstructions") {
         println("  JAVA_HOME: $javaHome")
         println("  Java bin directory: $javaBin")
         println()
+        println("PATH executable scan:")
+        val javaStatus =
+            if (javaPath != null) {
+                "FOUND at $javaPath"
+            } else {
+                "NOT FOUND"
+            }
+        println("  java:   $javaStatus")
+        val nodeStatus =
+            if (nodePath != null) {
+                "FOUND at $nodePath"
+            } else {
+                "NOT FOUND"
+            }
+        println("  node:   $nodeStatus")
+        val claudeStatus =
+            if (claudePath != null) {
+                "FOUND at $claudePath"
+            } else {
+                "NOT FOUND"
+            }
+        println("  claude: $claudeStatus")
+        println()
         println("Instructions:")
         println("  1. Open Settings: Android Studio → Settings (⌘, on Mac, Ctrl+Alt+S elsewhere)")
         println("  2. Navigate to: Tools → Terminal")
         println("  3. Add to 'Environment variables' field:")
         println()
-        println("     JAVA_HOME=$javaHome;PATH=$javaBin")
+        println("     JAVA_HOME=$javaHome;PATH=$escapedPath")
         println()
         println("  4. Click 'Apply' and 'OK'")
         println("  5. Restart terminal windows in Android Studio")
