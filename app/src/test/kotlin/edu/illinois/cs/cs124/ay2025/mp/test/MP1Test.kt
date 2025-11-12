@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import edu.illinois.cs.cs124.ay2025.mp.R
 import edu.illinois.cs.cs124.ay2025.mp.helpers.setTimeProvider
+import edu.illinois.cs.cs124.ay2025.mp.models.Summary
 import edu.illinois.cs.cs124.ay2025.mp.models.filterTime
 import edu.illinois.cs.cs124.ay2025.mp.models.filterVirtual
 import edu.illinois.cs.cs124.ay2025.mp.models.search
@@ -124,6 +125,19 @@ class MP1Test {
             .isEqualTo("04b79587f97bcddc")
 
         // Add your tests here
+        // Test sorting by start time (ascending) then by title (alphabetical)
+        val mockEvents = listOf(
+            Summary("3", "B", "2025-10-15T10:01:00Z", "Loc", false),
+            Summary("1", "A", "2025-10-15T10:00:00Z", "Loc", false),
+            Summary("4", "AA", "2025-10-15T10:01:00Z", "Loc", false),
+            Summary("2", "AA", "2025-10-15T10:00:00Z", "Loc", false)
+        ).sorted()
+
+        // After sorting: earliest time first, then alphabetically by title
+        assertThat(mockEvents[0].id).isEqualTo("1") // 10:00 - A
+        assertThat(mockEvents[1].id).isEqualTo("2") // 10:00 - AA
+        assertThat(mockEvents[2].id).isEqualTo("4") // 10:01 - AA
+        assertThat(mockEvents[3].id).isEqualTo("3") // 10:01 - B
     }
 
     @Test

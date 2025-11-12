@@ -24,7 +24,11 @@ open class Summary(
     override fun hashCode() = id.hashCode()
 
     override fun compareTo(other: Summary): Int {
-        TODO("Not yet implemented")
+        return if (start.compareTo(other.start) != 0) {
+            start.compareTo(other.start)
+        } else {
+            title.compareTo(other.title)
+        }
     }
 }
 
