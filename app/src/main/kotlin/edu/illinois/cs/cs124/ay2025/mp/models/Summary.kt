@@ -68,23 +68,52 @@ fun List<Summary>.filterTime(start: java.time.Instant?, end: java.time.Instant?)
 fun List<Summary>.search(query: String): List<Summary> {
     var list = mutableListOf<Summary>()
     var isBlank = true
+    var sTerm = query
+    var isVirtual: Boolean? = null
+    var theLoc: String? = null
     for (i in query) {
         if (i != ' ') {
             isBlank = false
         }
     }
-    for (summary in this) {
-        if (isBlank) {
-            list += summary
-        } else {
-            if (summary.title.contains(query, ignoreCase = true)
-                || summary.location.contains(query, ignoreCase = true)) {
+    if (isBlank) {
+        return this.toList()
+    } else {
+        if (query.contains("location:")) {
+            val lPart = query.split("location:")[1].split(" ")[0]
+            theLoc = lPart.toString()
+            sTerm = sTerm.replace("location:$theLoc", "").trim()
+        }
+        if (query.contains("virtual:")) {
+            val vPart = query.split("virtual:")[1].split(" ")[0]
+            isVirtual = vPart.toBoolean()
+            sTerm = sTerm.replace("virtual:$isVirtual", "").trim()  // REMOVE from sTerm
+        }
+        for (summary in this) {
+            var matches = true
+
+            // Check search term (if not empty)
+            if (sTerm.isNotBlank()) {
+                if (!summary.title.contains(sTerm, ignoreCase = true) &&
+                    !summary.location.contains(sTerm, ignoreCase = true)) {
+                    matches = false
+                }
+            }
+            // Check location filter
+            if (theLoc != null && !summary.location.contains(theLoc, ignoreCase = true)) {
+                matches = false
+            }
+
+            // Check virtual filter
+            if (isVirtual != null && summary.virtual != isVirtual) {
+                matches = false
+            }
+
+            if (matches) {
                 list += summary
             }
         }
     }
-    if (!isBlank) {
-        list.sortBy { it.title }
-    }
+    list.sortBy { it.title }
     return list
 }

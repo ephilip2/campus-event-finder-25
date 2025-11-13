@@ -412,6 +412,67 @@ class MP1Test {
             .isEqualTo(0)
 
         // Add your tests here
+        // Test virtual:false filter
+        val nonVirtualResults = SUMMARIES.search("virtual:false")
+        assertThat(nonVirtualResults.size).isEqualTo(2651)
+        assertThat(nonVirtualResults.all { !it.virtual }).isTrue()
+
+        // Test that virtual:true only returns virtual events
+        assertThat(virtualResults.all { it.virtual }).isTrue()
+
+        // Test that location:union only returns events at union
+        assertThat(unionResults.all {
+            it.location.contains("union", ignoreCase = true)
+        }).isTrue()
+
+        // Test combining search term with virtual filter
+        val exhibitVirtual = SUMMARIES.search("exhibit virtual:true")
+        assertThat(exhibitVirtual.all { it.virtual }).isTrue()
+        assertThat(exhibitVirtual.all {
+            it.title.contains("exhibit", ignoreCase = true) ||
+            it.location.contains("exhibit", ignoreCase = true)
+        }).isTrue()
+
+        // Test with custom controlled data
+        val customList = listOf(
+            Summary("1", "Coffee Shop", "2025-10-15T10:00:00Z", "Union", false),
+            Summary("2", "Virtual Coffee", "2025-10-15T11:00:00Z", "Online", true),
+            Summary("3", "Tea Time", "2025-10-15T12:00:00Z", "Union", false),
+            Summary("4", "Virtual Meeting", "2025-10-15T13:00:00Z", "Zoom", true)
+        )
+
+        // Test location:union filter
+        val customUnion = customList.search("location:union")
+        assertThat(customUnion.size).isEqualTo(2)
+        assertThat(customUnion.map { it.id }).containsExactly("1", "3").inOrder()
+
+        // Test virtual:true filter
+        val customVirtual = customList.search("virtual:true")
+        assertThat(customVirtual.size).isEqualTo(2)
+        assertThat(customVirtual.map { it.id }).containsExactly("2", "4").inOrder()
+
+        // Test virtual:false filter
+        val customNonVirtual = customList.search("virtual:false")
+        assertThat(customNonVirtual.size).isEqualTo(2)
+        assertThat(customNonVirtual.map { it.id }).containsExactly("1", "3").inOrder()
+
+        // Test search term + location filter
+        val coffeeAtUnionCustom = customList.search("coffee location:union")
+        assertThat(coffeeAtUnionCustom.size).isEqualTo(1)
+        assertThat(coffeeAtUnionCustom.first().id).isEqualTo("1")
+
+        // Test search term + virtual filter
+        val virtualCoffee = customList.search("coffee virtual:true")
+        assertThat(virtualCoffee.size).isEqualTo(1)
+        assertThat(virtualCoffee.first().id).isEqualTo("2")
+
+        // Test results are sorted by title
+        assertThat(unionResults[0].title <= unionResults[unionResults.size - 1].title).isTrue()
+        assertThat(virtualResults[0].title <= virtualResults[virtualResults.size - 1].title).isTrue()
+
+        // Test empty results when filters don't match
+        val noMatch = customList.search("pizza location:library")
+        assertThat(noMatch.size).isEqualTo(0)
     }
 
     @Test
