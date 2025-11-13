@@ -66,5 +66,23 @@ fun List<Summary>.filterTime(start: java.time.Instant?, end: java.time.Instant?)
 }
 
 fun List<Summary>.search(query: String): List<Summary> {
-    TODO("Not yet implemented")
+    var list = mutableListOf<Summary>()
+    var isBlank = true
+    for (i in query) {
+        if (i != ' ') {
+            isBlank = false
+        }
+    }
+    for (summary in this) {
+        if (isBlank) {
+            list += summary
+        } else {
+            if (summary.title.contains(query, ignoreCase = true)
+                || summary.location.contains(query, ignoreCase = true)) {
+               list += summary
+            }
+        }
+    }
+    list.sortBy { it.id }
+    return list
 }

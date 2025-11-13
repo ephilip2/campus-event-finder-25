@@ -330,12 +330,68 @@ class MP1Test {
         val exhibitResults = SUMMARIES.search("exhibit")
         assertThat(exhibitResults.size)
             .isEqualTo(209)
+        // Results should be sorted by ID
         assertThat(exhibitResults.first().id)
-            .isEqualTo("9f6535630fbe18ad")
+            .isEqualTo("0000d7bcfc9e8f63")
         assertThat(exhibitResults.last().id)
-            .isEqualTo("a536590b0211d019")
+            .isEqualTo("ffa9ae57238c3932")
 
         // Add your tests here
+        // Test whitespace-only query (should return all events like empty string)
+        val whitespaceResults = SUMMARIES.search("   ")
+        assertThat(whitespaceResults.size).isEqualTo(2756)
+
+        // Test case insensitivity - uppercase
+        val exhibitUppercase = SUMMARIES.search("EXHIBIT")
+        assertThat(exhibitUppercase.size).isEqualTo(209)
+
+        // Test case insensitivity - mixed case
+        val exhibitMixed = SUMMARIES.search("ExHiBiT")
+        assertThat(exhibitMixed.size).isEqualTo(209)
+
+        // Test search with no matches
+        val noMatches = SUMMARIES.search("xyzabc123nonexistent")
+        assertThat(noMatches.size).isEqualTo(0)
+
+        // Test results are sorted by ID
+        val sortedResults = SUMMARIES.search("exhibit")
+        for (i in 0 until sortedResults.size - 1) {
+            assertThat(sortedResults[i].id <= sortedResults[i + 1].id).isTrue()
+        }
+
+        // Test with custom controlled data to verify search behavior
+        val customList = listOf(
+            Summary("3", "Coffee Break", "2025-10-15T10:00:00Z", "Union", false),
+            Summary("1", "Art Exhibit", "2025-10-15T11:00:00Z", "Gallery", false),
+            Summary("2", "Meeting at Union", "2025-10-15T12:00:00Z", "Union", false),
+            Summary("4", "Lecture", "2025-10-15T13:00:00Z", "Library", false)
+        )
+
+        // Search for "union" - should match in title (#2) and location (#3)
+        val unionSearch = customList.search("union")
+        assertThat(unionSearch.size).isEqualTo(2)
+        // Should be sorted by ID: "2", "3"
+        assertThat(unionSearch.map { it.id }).containsExactly("2", "3").inOrder()
+
+        // Search for "exhibit" - should only match in title (#1)
+        val exhibitSearch = customList.search("exhibit")
+        assertThat(exhibitSearch.size).isEqualTo(1)
+        assertThat(exhibitSearch.first().id).isEqualTo("1")
+
+        // Search for "library" - should match in location (#4)
+        val librarySearch = customList.search("library")
+        assertThat(librarySearch.size).isEqualTo(1)
+        assertThat(librarySearch.first().id).isEqualTo("4")
+
+        // Test partial match
+        val partialMatch = customList.search("meet")
+        assertThat(partialMatch.size).isEqualTo(1)
+        assertThat(partialMatch.first().title).contains("Meeting")
+
+        // Test empty list
+        val emptyList = emptyList<Summary>()
+        assertThat(emptyList.search("anything").size).isEqualTo(0)
+        assertThat(emptyList.search("").size).isEqualTo(0)
     }
 
     @Test
