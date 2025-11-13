@@ -330,11 +330,11 @@ class MP1Test {
         val exhibitResults = SUMMARIES.search("exhibit")
         assertThat(exhibitResults.size)
             .isEqualTo(209)
-        // Results should be sorted by ID
-        assertThat(exhibitResults.first().id)
-            .isEqualTo("0000d7bcfc9e8f63")
-        assertThat(exhibitResults.last().id)
-            .isEqualTo("ffa9ae57238c3932")
+        // Results should be sorted by title (case sensitive)
+        assertThat(exhibitResults.first().title)
+            .isEqualTo("Art & Design Faculty Exhibition")
+        assertThat(exhibitResults.last().title)
+            .isEqualTo("Zines as Tools for Community Exhibit")
 
         // Add your tests here
         // Test whitespace-only query (should return all events like empty string)
@@ -353,10 +353,10 @@ class MP1Test {
         val noMatches = SUMMARIES.search("xyzabc123nonexistent")
         assertThat(noMatches.size).isEqualTo(0)
 
-        // Test results are sorted by ID
+        // Test results are sorted by title (case sensitive)
         val sortedResults = SUMMARIES.search("exhibit")
         for (i in 0 until sortedResults.size - 1) {
-            assertThat(sortedResults[i].id <= sortedResults[i + 1].id).isTrue()
+            assertThat(sortedResults[i].title <= sortedResults[i + 1].title).isTrue()
         }
 
         // Test with custom controlled data to verify search behavior
@@ -370,8 +370,8 @@ class MP1Test {
         // Search for "union" - should match in title (#2) and location (#3)
         val unionSearch = customList.search("union")
         assertThat(unionSearch.size).isEqualTo(2)
-        // Should be sorted by ID: "2", "3"
-        assertThat(unionSearch.map { it.id }).containsExactly("2", "3").inOrder()
+        // Should be sorted by title: "Coffee Break" comes before "Meeting at Union"
+        assertThat(unionSearch.map { it.id }).containsExactly("3", "2").inOrder()
 
         // Search for "exhibit" - should only match in title (#1)
         val exhibitSearch = customList.search("exhibit")

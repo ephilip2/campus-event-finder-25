@@ -79,10 +79,12 @@ fun List<Summary>.search(query: String): List<Summary> {
         } else {
             if (summary.title.contains(query, ignoreCase = true)
                 || summary.location.contains(query, ignoreCase = true)) {
-               list += summary
+                list += summary
             }
         }
     }
-    list.sortBy { it.id }
+    if (!isBlank) {
+        list.sortBy { it.title }
+    }
     return list
 }
