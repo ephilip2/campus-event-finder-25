@@ -236,6 +236,84 @@ class MP1Test {
             .isEqualTo(452)
 
         // Add your tests here
+        // Test that all returned events are actually within the time range
+        assertThat(todayEvents.all {
+            val eventTime = Instant.parse(it.start)
+            eventTime >= startOfDay && eventTime <= endOfDay
+        }).isTrue()
+
+        // Test that future events are all on or after the start time
+        assertThat(futureEvents.all {
+            val eventTime = Instant.parse(it.start)
+            eventTime >= startOfDay
+        }).isTrue()
+
+        // Test that past events are all on or before the end time
+        assertThat(pastEvents.all {
+            val eventTime = Instant.parse(it.start)
+            eventTime <= endOfDay
+        }).isTrue()
+
+        // Test with custom controlled data
+        val customEvents = listOf(
+            Summary("1", "Early Event", "2025-10-14T10:00:00Z", "Union", false),
+            Summary("2", "Today Morning", "2025-10-15T10:00:00Z", "Library", false),
+            Summary("3", "Today Evening", "2025-10-15T20:00:00Z", "Quad", false),
+            Summary("4", "Tomorrow", "2025-10-16T10:00:00Z", "Online", true),
+            Summary("5", "Future", "2025-10-20T10:00:00Z", "Union", false)
+        )
+
+        // Test filtering for a specific day
+        val customToday = customEvents.filterTime(startOfDay, endOfDay)
+        assertThat(customToday.size).isEqualTo(2)
+        assertThat(customToday.map { it.id }).containsExactly("2", "3")
+
+        // Test filtering for future events
+        val customFuture = customEvents.filterTime(startOfDay, null)
+        assertThat(customFuture.size).isEqualTo(4)
+        assertThat(customFuture.map { it.id }).containsExactly("2", "3", "4", "5")
+
+        // Test filtering for past events
+        val customPast = customEvents.filterTime(null, endOfDay)
+        assertThat(customPast.size).isEqualTo(3)
+        assertThat(customPast.map { it.id }).containsExactly("1", "2", "3")
+
+        // Test boundary conditions - event exactly at start time
+        val exactStart = listOf(
+            Summary("6", "Exact Start", "2025-10-15T05:00:00Z", "Union", false)
+        )
+        assertThat(exactStart.filterTime(startOfDay, endOfDay).size).isEqualTo(1)
+        assertThat(exactStart.filterTime(startOfDay, null).size).isEqualTo(1)
+
+        // Test boundary conditions - event exactly at end time
+        val exactEnd = listOf(
+            Summary("7", "Exact End", "2025-10-16T04:59:59.999Z", "Library", false)
+        )
+        assertThat(exactEnd.filterTime(startOfDay, endOfDay).size).isEqualTo(1)
+        assertThat(exactEnd.filterTime(null, endOfDay).size).isEqualTo(1)
+
+        // Test with empty list
+        val emptyList = emptyList<Summary>()
+        assertThat(emptyList.filterTime(startOfDay, endOfDay).size).isEqualTo(0)
+        assertThat(emptyList.filterTime(startOfDay, null).size).isEqualTo(0)
+        assertThat(emptyList.filterTime(null, endOfDay).size).isEqualTo(0)
+
+        // Test with narrow time range (1 hour)
+        val narrowStart = Instant.parse("2025-10-15T14:00:00Z")
+        val narrowEnd = Instant.parse("2025-10-15T15:00:00Z")
+        val narrowRange = SUMMARIES.filterTime(narrowStart, narrowEnd)
+        assertThat(narrowRange.all {
+            val eventTime = Instant.parse(it.start)
+            eventTime >= narrowStart && eventTime <= narrowEnd
+        }).isTrue()
+
+        // Test that filterTime returns a new list instance
+        assertThat(futureEvents).isNotSameInstanceAs(SUMMARIES)
+        assertThat(pastEvents).isNotSameInstanceAs(SUMMARIES)
+
+        // Test both null case (no filtering - should return all events)
+        val allEvents = SUMMARIES.filterTime(null, null)
+        assertThat(allEvents.size).isEqualTo(SUMMARIES.size)
     }
 
     @Test

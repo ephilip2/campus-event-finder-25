@@ -43,7 +43,26 @@ fun List<Summary>.filterVirtual(isVirtual: Boolean): List<Summary> {
 }
 
 fun List<Summary>.filterTime(start: java.time.Instant?, end: java.time.Instant?): List<Summary> {
-    TODO("Not yet implemented")
+    var list = mutableListOf<Summary>()
+    for (summary in this) {
+        var inst = java.time.Instant.parse(summary.start)
+        if (start != null && end != null) {
+            if (inst >= start && inst <= end) {
+                list += summary
+            }
+        } else if (start == null && end != null) {
+            if (inst <= end) {
+                list += summary
+            }
+        } else if (start != null) {
+            if (inst >= start) {
+                list += summary
+            }
+        } else {
+            list += summary
+        }
+    }
+    return list
 }
 
 fun List<Summary>.search(query: String): List<Summary> {
