@@ -32,8 +32,14 @@ open class Summary(
     }
 }
 
-fun List<Summary>.filterVirtual(virtual: Boolean): List<Summary> {
-    TODO("Not yet implemented")
+fun List<Summary>.filterVirtual(isVirtual: Boolean): List<Summary> {
+    var list = mutableListOf<Summary>()
+    for (summary in this) {
+        if (summary.virtual == isVirtual) {
+            list += summary
+        }
+    }
+    return list
 }
 
 fun List<Summary>.filterTime(start: java.time.Instant?, end: java.time.Instant?): List<Summary> {

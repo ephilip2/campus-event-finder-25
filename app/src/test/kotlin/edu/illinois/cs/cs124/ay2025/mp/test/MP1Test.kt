@@ -157,6 +157,61 @@ class MP1Test {
             .isFalse()
 
         // Add your tests here
+        // Test filtering for virtual events (isVirtual = true)
+        val virtualFiltered = allSummaries.filterVirtual(true)
+        assertThat(virtualFiltered.size)
+            .isEqualTo(105)
+        assertThat(virtualFiltered)
+            .isNotSameInstanceAs(allSummaries)
+
+        // Verify all returned events are actually virtual
+        assertThat(virtualFiltered.all { it.virtual })
+            .isTrue()
+
+        // Verify all non-virtual events are actually non-virtual
+        assertThat(nonVirtualFiltered.all { !it.virtual })
+            .isTrue()
+
+        // Test that virtual + non-virtual counts equal total
+        assertThat(virtualFiltered.size + nonVirtualFiltered.size)
+            .isEqualTo(allSummaries.size)
+
+        // Test with custom list to verify logic
+        val customList = listOf(
+            Summary("1", "Virtual Event", "2025-10-15T10:00:00Z", "Online", true),
+            Summary("2", "In-Person Event", "2025-10-15T11:00:00Z", "Union", false),
+            Summary("3", "Another Virtual", "2025-10-15T12:00:00Z", "Zoom", true),
+            Summary("4", "Another In-Person", "2025-10-15T13:00:00Z", "Library", false)
+        )
+
+        val customVirtual = customList.filterVirtual(true)
+        assertThat(customVirtual.size).isEqualTo(2)
+        assertThat(customVirtual.map { it.id }).containsExactly("1", "3")
+
+        val customNonVirtual = customList.filterVirtual(false)
+        assertThat(customNonVirtual.size).isEqualTo(2)
+        assertThat(customNonVirtual.map { it.id }).containsExactly("2", "4")
+
+        // Test with empty list
+        val emptyList = emptyList<Summary>()
+        assertThat(emptyList.filterVirtual(true).size).isEqualTo(0)
+        assertThat(emptyList.filterVirtual(false).size).isEqualTo(0)
+
+        // Test with all virtual events
+        val allVirtual = listOf(
+            Summary("5", "Virtual 1", "2025-10-15T10:00:00Z", "Online", true),
+            Summary("6", "Virtual 2", "2025-10-15T11:00:00Z", "Online", true)
+        )
+        assertThat(allVirtual.filterVirtual(true).size).isEqualTo(2)
+        assertThat(allVirtual.filterVirtual(false).size).isEqualTo(0)
+
+        // Test with all non-virtual events
+        val allNonVirtual = listOf(
+            Summary("7", "In-Person 1", "2025-10-15T10:00:00Z", "Union", false),
+            Summary("8", "In-Person 2", "2025-10-15T11:00:00Z", "Library", false)
+        )
+        assertThat(allNonVirtual.filterVirtual(true).size).isEqualTo(0)
+        assertThat(allNonVirtual.filterVirtual(false).size).isEqualTo(2)
     }
 
     @Test
