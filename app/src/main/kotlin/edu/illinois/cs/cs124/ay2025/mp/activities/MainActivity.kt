@@ -4,18 +4,26 @@ import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowInsets
+import android.widget.SearchView
+import android.widget.ToggleButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import edu.illinois.cs.cs124.ay2025.mp.R
 import edu.illinois.cs.cs124.ay2025.mp.adapters.SummaryListAdapter
+import edu.illinois.cs.cs124.ay2025.mp.helpers.getTimeProvider
 import edu.illinois.cs.cs124.ay2025.mp.models.Summary
+import edu.illinois.cs.cs124.ay2025.mp.models.filterTime
+import edu.illinois.cs.cs124.ay2025.mp.models.filterVirtual
+import edu.illinois.cs.cs124.ay2025.mp.models.search
 import edu.illinois.cs.cs124.ay2025.mp.network.Client
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 /**
  * STEP 3: MainActivity is created after EventableApplication finishes initializing.
  * This is the main screen users see - displays a list of upcoming event summaries.
  */
-class MainActivity : Activity() {
+class MainActivity : Activity(), SearchView.OnQueryTextListener {
 
     // List of event summaries to display (starts empty until loaded from server)
     private var summaries: List<Summary> = emptyList()
@@ -23,6 +31,9 @@ class MainActivity : Activity() {
     // Adapter that manages how summaries are displayed in the RecyclerView
     private lateinit var listAdapter: SummaryListAdapter
 
+    private var todayButtonClicked = false
+    private var virtualButtonClicked = false
+    private var currentSearchQuery: String = ""
     /**
      * STEP 3: Called when the activity is first created.
      * This is where we set up the UI layout and initialize views.
@@ -53,6 +64,48 @@ class MainActivity : Activity() {
             v.setPadding(insets.left, insets.top, insets.right, insets.bottom)
             WindowInsets.CONSUMED
         }
+
+        // Set up the calendar button (today filter)
+        val todayButton: ToggleButton = findViewById(R.id.todayButton)
+        todayButton.isChecked = true
+        todayButton.alpha = 1.0f
+        todayButtonClicked = true
+
+        todayButton.setOnCheckedChangeListener { button, isChecked ->
+            // Update button appearance
+            if (isChecked) {
+                button.alpha = 1.0f
+            } else {
+                button.alpha = 0.3f
+            }
+            // For now, just log the state change
+            Log.d(TAG, "Today button toggled: $isChecked")
+            todayButtonClicked = isChecked
+            updateDisplayedSummaries()
+        }
+
+        // Set up the virtual button (virtual filter)
+        val virtualButton: ToggleButton = findViewById(R.id.virtualButton)
+        virtualButton.isChecked = false
+        virtualButton.alpha = 0.3f
+        virtualButtonClicked = false
+
+        virtualButton.setOnCheckedChangeListener { button, isChecked ->
+            // Update button appearance
+            if (isChecked) {
+                button.alpha = 1.0f
+            } else {
+                button.alpha = 0.3f
+            }
+            // Update the filter state and refresh the displayed summaries
+            Log.d(TAG, "Virtual button toggled: $isChecked")
+            virtualButtonClicked = isChecked
+            updateDisplayedSummaries()
+        }
+
+        // Set up the search bar
+        val searchView: SearchView = findViewById(R.id.search)
+        searchView.setOnQueryTextListener(this)
     }
 
     /**
@@ -91,8 +144,72 @@ class MainActivity : Activity() {
         if (summaries.isEmpty()) {
             return
         }
-        // Give the new summaries to the adapter, which triggers the RecyclerView to refresh
-        listAdapter.setSummaries(summaries)
+
+        // Start with all summaries
+        var filteredSummaries = summaries
+
+        // Apply today filter if the today button is checked
+        if (todayButtonClicked) {
+            // Get current time
+            val now = getTimeProvider().now()
+            val chicagoZone = ZoneId.of("America/Chicago")
+
+            // Get start of today in Chicago timezone
+            val startOfDay = ZonedDateTime.ofInstant(now, chicagoZone)
+                .toLocalDate()
+                .atStartOfDay(chicagoZone)
+                .toInstant()
+
+            // Get end of today (start of tomorrow minus 1 millisecond)
+            val endOfDay = startOfDay
+                .atZone(chicagoZone)
+                .plusDays(1)
+                .minusNanos(1000000)
+                .toInstant()
+
+            // Filter events to only those happening today
+            filteredSummaries = filteredSummaries.filterTime(startOfDay, endOfDay)
+        }
+
+        // Apply virtual filter if the virtual button is checked
+        if (virtualButtonClicked) {
+            filteredSummaries = filteredSummaries.filterVirtual(true)
+        }
+
+        // Apply search filter if there's a search query
+        if (currentSearchQuery.isNotEmpty()) {
+            filteredSummaries = filteredSummaries.search(currentSearchQuery)
+        }
+
+        // Sort the filtered results
+        filteredSummaries = filteredSummaries.sorted()
+
+        // Give the filtered summaries to the adapter, which triggers the RecyclerView to refresh
+        listAdapter.setSummaries(filteredSummaries)
+    }
+
+    /**
+     * Called when the user submits a search query.
+     * @param query The search text
+     * @return true if the query has been handled
+     */
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        Log.d(TAG, "Search submitted: $query")
+        currentSearchQuery = query ?: ""
+        updateDisplayedSummaries()
+        return true
+    }
+
+    /**
+     * Called when the search query text changes.
+     * @param newText The new search text
+     * @return true if the query has been handled
+     */
+    override fun onQueryTextChange(newText: String?): Boolean {
+        Log.d(TAG, "Search text changed: $newText")
+        currentSearchQuery = newText ?: ""
+        updateDisplayedSummaries()
+        return true
     }
 }
 

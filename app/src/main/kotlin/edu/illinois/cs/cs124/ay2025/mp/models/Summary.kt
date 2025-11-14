@@ -66,17 +66,11 @@ fun List<Summary>.filterTime(start: java.time.Instant?, end: java.time.Instant?)
 }
 
 fun List<Summary>.search(query: String): List<Summary> {
-    var list = mutableListOf<Summary>()
-    var isBlank = true
+    val list = mutableListOf<Summary>()
     var sTerm = query
     var isVirtual: Boolean? = null
     var theLoc: String? = null
-    for (i in query) {
-        if (i != ' ') {
-            isBlank = false
-        }
-    }
-    if (isBlank) {
+    if (query.isBlank()) {
         return this.toList()
     } else {
         if (query.contains("location:")) {
@@ -87,7 +81,7 @@ fun List<Summary>.search(query: String): List<Summary> {
         if (query.contains("virtual:")) {
             val vPart = query.split("virtual:")[1].split(" ")[0]
             isVirtual = vPart.toBoolean()
-            sTerm = sTerm.replace("virtual:$isVirtual", "").trim()  // REMOVE from sTerm
+            sTerm = sTerm.replace("virtual:$isVirtual", "").trim()
         }
         for (summary in this) {
             var matches = true
@@ -95,7 +89,8 @@ fun List<Summary>.search(query: String): List<Summary> {
             // Check search term (if not empty)
             if (sTerm.isNotBlank()) {
                 if (!summary.title.contains(sTerm, ignoreCase = true) &&
-                    !summary.location.contains(sTerm, ignoreCase = true)) {
+                    !summary.location.contains(sTerm, ignoreCase = true)
+                ) {
                     matches = false
                 }
             }

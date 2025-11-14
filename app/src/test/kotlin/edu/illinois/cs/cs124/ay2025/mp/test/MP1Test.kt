@@ -8,6 +8,7 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import edu.illinois.cs.cs124.ay2025.mp.R
@@ -26,6 +27,7 @@ import edu.illinois.cs.cs124.ay2025.mp.test.helpers.getShuffledSummaries
 import edu.illinois.cs.cs124.ay2025.mp.test.helpers.pause
 import edu.illinois.cs.cs124.ay2025.mp.test.helpers.searchFor
 import edu.illinois.cs.cs124.ay2025.mp.test.helpers.startMainActivity
+import edu.illinois.cs.cs124.ay2025.mp.test.helpers.withRecyclerView
 import edu.illinois.cs.cs125.gradlegrader.annotations.Graded
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -482,10 +484,35 @@ class MP1Test {
     fun test5_testMainActivitySummarySort() {
         setTimeProvider { Instant.parse("2025-10-15T12:00:00Z") }
 
+        // Determine expected first event by filtering and sorting SUMMARIES
+        val startOfDay = Instant.parse("2025-10-15T05:00:00Z")
+        val endOfDay = Instant.parse("2025-10-16T04:59:59.999Z")
+        val todayEvents = SUMMARIES.filterTime(startOfDay, endOfDay).sorted()
+        val expectedFirstTitle = todayEvents[0].title
+        // my tests
+
+        // Find two consecutive events with the same start time to verify alphabetical sorting
+        val sameTimeIndex =  (0 until todayEvents.size - 1).find { i ->
+            todayEvents[i].start == todayEvents[i + 1].start
+        }
+
+        if (sameTimeIndex != null) {
+            // Found events with same time - verify alphabetical ordering
+            assertThat(todayEvents[sameTimeIndex].title <= todayEvents[sameTimeIndex + 1].title).isTrue()
+        }
+
         startMainActivity { activity ->
             onView(withId(R.id.recycler_view)).check(countRecyclerView(45))
 
-            // Add your tests here
+            // Check the title of the first event in the list
+            onView(withRecyclerView(R.id.recycler_view).atPositionOnView(0, R.id.title))
+                .check(matches(withText(expectedFirstTitle)))
+
+            // Check another position to verify sorting
+            onView(withRecyclerView(R.id.recycler_view).atPositionOnView(2, R.id.title))
+                .check(matches(withText(todayEvents[2].title)))
+
+            assertThat(todayEvents[3].start <= todayEvents[4].start).isTrue()
         }
     }
 
@@ -529,6 +556,22 @@ class MP1Test {
             onView(withId(R.id.recycler_view)).check(countRecyclerView(2349))
 
             // Add your tests here
+            // Test clicking today button again to turn it back on
+            onView(withId(R.id.todayButton)).perform(click())
+            pause()
+            onView(withId(R.id.recycler_view)).check(countRecyclerView(45))
+
+            // Test virtual button alone (with today filter on)
+            onView(withId(R.id.virtualButton)).perform(click())
+            pause()
+            // Should show virtual events from today only
+            val todayVirtualCount = SUMMARIES
+                .filterTime(Instant.parse("2025-10-15T05:00:00Z"), Instant.parse("2025-10-16T04:59:59.999Z"))
+                .filterVirtual(true)
+                .size
+            onView(withId(R.id.recycler_view)).check(countRecyclerView(todayVirtualCount))
+
+            // Add 2-3 more button combination tests here following this pattern
         }
     }
 

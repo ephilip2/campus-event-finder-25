@@ -101,6 +101,7 @@ app/src/
 - Max line length: 120 characters (ktlint)
 - Detekt violations reduce grade by up to 10 points
 - Main source paths must contain only ASCII characters (checked by `checkPaths` task)
+- **Always use braces for if statements**: Never use braceless if statements. Always include braces `{}` even for single-line conditionals.
 
 ### Grading System
 - Total points: 100
