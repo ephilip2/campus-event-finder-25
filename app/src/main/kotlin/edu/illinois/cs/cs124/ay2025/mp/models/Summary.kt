@@ -59,49 +59,39 @@ fun List<Summary>.filterTime(start: java.time.Instant?, end: java.time.Instant?)
 }
 
 fun List<Summary>.search(query: String): List<Summary> {
+    if (query.isBlank()) {
+        return this.toList()
+    }
+
     val list = mutableListOf<Summary>()
     var sTerm = query
     var isVirtual: Boolean? = null
     var theLoc: String? = null
-    if (query.isBlank()) {
-        return this.toList()
-    } else {
-        if (query.contains("location:")) {
-            val lPart = query.split("location:")[1].split(" ")[0]
-            theLoc = lPart.toString()
-            sTerm = sTerm.replace("location:$theLoc", "").trim()
-        }
-        if (query.contains("virtual:")) {
-            val vPart = query.split("virtual:")[1].split(" ")[0]
-            isVirtual = vPart.toBoolean()
-            sTerm = sTerm.replace("virtual:$isVirtual", "").trim()
-        }
-        for (summary in this) {
-            var matches = true
 
-            // Check search term (if not empty)
-            if (sTerm.isNotBlank()) {
-                if (!summary.title.contains(sTerm, ignoreCase = true) &&
-                    !summary.location.contains(sTerm, ignoreCase = true)
-                ) {
-                    matches = false
-                }
-            }
-            // Check location filter
-            if (theLoc != null && !summary.location.contains(theLoc, ignoreCase = true)) {
-                matches = false
-            }
+    if (query.contains("location:")) {
+        val lPart = query.split("location:")[1].split(" ")[0]
+        theLoc = lPart.toString()
+        sTerm = sTerm.replace("location:$theLoc", "").trim()
+    }
+    if (query.contains("virtual:")) {
+        val vPart = query.split("virtual:")[1].split(" ")[0]
+        isVirtual = vPart.toBoolean()
+        sTerm = sTerm.replace("virtual:$isVirtual", "").trim()
+    }
 
-            // Check virtual filter
-            if (isVirtual != null && summary.virtual != isVirtual) {
-                matches = false
-            }
+    for (summary in this) {
+        val matchesSearchTerm = sTerm.isBlank() ||
+            summary.title.contains(sTerm, ignoreCase = true) ||
+            summary.location.contains(sTerm, ignoreCase = true)
 
-            if (matches) {
-                list += summary
-            }
+        val matchesLocation = theLoc == null || summary.location.contains(theLoc, ignoreCase = true)
+        val matchesVirtual = isVirtual == null || summary.virtual == isVirtual
+
+        if (matchesSearchTerm && matchesLocation && matchesVirtual) {
+            list += summary
         }
     }
+
     list.sortBy { it.title }
     return list
 }
