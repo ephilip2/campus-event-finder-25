@@ -1,6 +1,7 @@
 package edu.illinois.cs.cs124.ay2025.mp.activities
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowInsets
@@ -49,7 +50,11 @@ class MainActivity :
         title = "Discover Events"
 
         // Create the adapter (initially with empty list)
-        listAdapter = SummaryListAdapter(summaries, this)
+        listAdapter = SummaryListAdapter(summaries, this) { summary ->
+            val intent = Intent(this, EventActivity::class.java)
+            intent.putExtra("id", summary.id)
+            startActivity(intent)
+        }
 
         // Find the RecyclerView that was inflated from XML
         val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
