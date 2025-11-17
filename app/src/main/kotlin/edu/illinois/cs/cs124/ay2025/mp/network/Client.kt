@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import edu.illinois.cs.cs124.ay2025.mp.application.SERVER_URL
 import edu.illinois.cs.cs124.ay2025.mp.helpers.ResultMightThrow
 import edu.illinois.cs.cs124.ay2025.mp.helpers.objectMapper
+import edu.illinois.cs.cs124.ay2025.mp.models.Event
 import edu.illinois.cs.cs124.ay2025.mp.models.Summary
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -35,6 +36,32 @@ object Client {
                     val summaries: List<Summary> =
                         objectMapper.readValue(responseBody, object : TypeReference<List<Summary>>() {})
                     callback(ResultMightThrow(summaries))
+                }
+            } catch (e: IOException) {
+                callback(ResultMightThrow(e))
+            }
+        }
+    }
+
+    fun getEvent(id: String, callback: (ResultMightThrow<Event>) -> Any?) {
+        executor.execute {
+            try {
+                val request = Request.Builder()
+                    .url("$SERVER_URL/event/$id")
+                    .get()
+                    .build()
+
+                httpClient.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        callback(
+                            ResultMightThrow(IOException("Unexpected response code: ${response.code}")),
+                        )
+                        return@execute
+                    }
+
+                    val responseBody = response.body.string()
+                    val event: Event = objectMapper.readValue(responseBody, Event::class.java)
+                    callback(ResultMightThrow(event))
                 }
             } catch (e: IOException) {
                 callback(ResultMightThrow(e))

@@ -1,12 +1,7 @@
 package edu.illinois.cs.cs124.ay2025.mp.models
 
-open class Summary(
-    val id: String,
-    val title: String,
-    val start: String,
-    val location: String,
-    val virtual: Boolean,
-) : Comparable<Summary> {
+open class Summary(val id: String, val title: String, val start: String, val location: String, val virtual: Boolean) :
+    Comparable<Summary> {
 
     constructor(eventData: EventData) : this(
         id = eventData.id,
@@ -23,12 +18,10 @@ open class Summary(
 
     override fun hashCode() = id.hashCode()
 
-    override fun compareTo(other: Summary): Int {
-        return if (start.compareTo(other.start) != 0) {
-            start.compareTo(other.start)
-        } else {
-            title.compareTo(other.title)
-        }
+    override fun compareTo(other: Summary): Int = if (start.compareTo(other.start) != 0) {
+        start.compareTo(other.start)
+    } else {
+        title.compareTo(other.title)
     }
 }
 

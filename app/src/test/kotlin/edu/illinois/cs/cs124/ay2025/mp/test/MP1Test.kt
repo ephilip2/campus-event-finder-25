@@ -132,7 +132,7 @@ class MP1Test {
             Summary("3", "B", "2025-10-15T10:01:00Z", "Loc", false),
             Summary("1", "A", "2025-10-15T10:00:00Z", "Loc", false),
             Summary("4", "AA", "2025-10-15T10:01:00Z", "Loc", false),
-            Summary("2", "AA", "2025-10-15T10:00:00Z", "Loc", false)
+            Summary("2", "AA", "2025-10-15T10:00:00Z", "Loc", false),
         ).sorted()
 
         // After sorting: earliest time first, then alphabetically by title
@@ -183,7 +183,7 @@ class MP1Test {
             Summary("1", "Virtual Event", "2025-10-15T10:00:00Z", "Online", true),
             Summary("2", "In-Person Event", "2025-10-15T11:00:00Z", "Union", false),
             Summary("3", "Another Virtual", "2025-10-15T12:00:00Z", "Zoom", true),
-            Summary("4", "Another In-Person", "2025-10-15T13:00:00Z", "Library", false)
+            Summary("4", "Another In-Person", "2025-10-15T13:00:00Z", "Library", false),
         )
 
         val customVirtual = customList.filterVirtual(true)
@@ -202,7 +202,7 @@ class MP1Test {
         // Test with all virtual events
         val allVirtual = listOf(
             Summary("5", "Virtual 1", "2025-10-15T10:00:00Z", "Online", true),
-            Summary("6", "Virtual 2", "2025-10-15T11:00:00Z", "Online", true)
+            Summary("6", "Virtual 2", "2025-10-15T11:00:00Z", "Online", true),
         )
         assertThat(allVirtual.filterVirtual(true).size).isEqualTo(2)
         assertThat(allVirtual.filterVirtual(false).size).isEqualTo(0)
@@ -210,7 +210,7 @@ class MP1Test {
         // Test with all non-virtual events
         val allNonVirtual = listOf(
             Summary("7", "In-Person 1", "2025-10-15T10:00:00Z", "Union", false),
-            Summary("8", "In-Person 2", "2025-10-15T11:00:00Z", "Library", false)
+            Summary("8", "In-Person 2", "2025-10-15T11:00:00Z", "Library", false),
         )
         assertThat(allNonVirtual.filterVirtual(true).size).isEqualTo(0)
         assertThat(allNonVirtual.filterVirtual(false).size).isEqualTo(2)
@@ -239,22 +239,28 @@ class MP1Test {
 
         // Add your tests here
         // Test that all returned events are actually within the time range
-        assertThat(todayEvents.all {
-            val eventTime = Instant.parse(it.start)
-            eventTime >= startOfDay && eventTime <= endOfDay
-        }).isTrue()
+        assertThat(
+            todayEvents.all {
+                val eventTime = Instant.parse(it.start)
+                eventTime >= startOfDay && eventTime <= endOfDay
+            },
+        ).isTrue()
 
         // Test that future events are all on or after the start time
-        assertThat(futureEvents.all {
-            val eventTime = Instant.parse(it.start)
-            eventTime >= startOfDay
-        }).isTrue()
+        assertThat(
+            futureEvents.all {
+                val eventTime = Instant.parse(it.start)
+                eventTime >= startOfDay
+            },
+        ).isTrue()
 
         // Test that past events are all on or before the end time
-        assertThat(pastEvents.all {
-            val eventTime = Instant.parse(it.start)
-            eventTime <= endOfDay
-        }).isTrue()
+        assertThat(
+            pastEvents.all {
+                val eventTime = Instant.parse(it.start)
+                eventTime <= endOfDay
+            },
+        ).isTrue()
 
         // Test with custom controlled data
         val customEvents = listOf(
@@ -262,7 +268,7 @@ class MP1Test {
             Summary("2", "Today Morning", "2025-10-15T10:00:00Z", "Library", false),
             Summary("3", "Today Evening", "2025-10-15T20:00:00Z", "Quad", false),
             Summary("4", "Tomorrow", "2025-10-16T10:00:00Z", "Online", true),
-            Summary("5", "Future", "2025-10-20T10:00:00Z", "Union", false)
+            Summary("5", "Future", "2025-10-20T10:00:00Z", "Union", false),
         )
 
         // Test filtering for a specific day
@@ -282,14 +288,14 @@ class MP1Test {
 
         // Test boundary conditions - event exactly at start time
         val exactStart = listOf(
-            Summary("6", "Exact Start", "2025-10-15T05:00:00Z", "Union", false)
+            Summary("6", "Exact Start", "2025-10-15T05:00:00Z", "Union", false),
         )
         assertThat(exactStart.filterTime(startOfDay, endOfDay).size).isEqualTo(1)
         assertThat(exactStart.filterTime(startOfDay, null).size).isEqualTo(1)
 
         // Test boundary conditions - event exactly at end time
         val exactEnd = listOf(
-            Summary("7", "Exact End", "2025-10-16T04:59:59.999Z", "Library", false)
+            Summary("7", "Exact End", "2025-10-16T04:59:59.999Z", "Library", false),
         )
         assertThat(exactEnd.filterTime(startOfDay, endOfDay).size).isEqualTo(1)
         assertThat(exactEnd.filterTime(null, endOfDay).size).isEqualTo(1)
@@ -304,10 +310,12 @@ class MP1Test {
         val narrowStart = Instant.parse("2025-10-15T14:00:00Z")
         val narrowEnd = Instant.parse("2025-10-15T15:00:00Z")
         val narrowRange = SUMMARIES.filterTime(narrowStart, narrowEnd)
-        assertThat(narrowRange.all {
-            val eventTime = Instant.parse(it.start)
-            eventTime >= narrowStart && eventTime <= narrowEnd
-        }).isTrue()
+        assertThat(
+            narrowRange.all {
+                val eventTime = Instant.parse(it.start)
+                eventTime >= narrowStart && eventTime <= narrowEnd
+            },
+        ).isTrue()
 
         // Test that filterTime returns a new list instance
         assertThat(futureEvents).isNotSameInstanceAs(SUMMARIES)
@@ -366,7 +374,7 @@ class MP1Test {
             Summary("3", "Coffee Break", "2025-10-15T10:00:00Z", "Union", false),
             Summary("1", "Art Exhibit", "2025-10-15T11:00:00Z", "Gallery", false),
             Summary("2", "Meeting at Union", "2025-10-15T12:00:00Z", "Union", false),
-            Summary("4", "Lecture", "2025-10-15T13:00:00Z", "Library", false)
+            Summary("4", "Lecture", "2025-10-15T13:00:00Z", "Library", false),
         )
 
         // Search for "union" - should match in title (#2) and location (#3)
@@ -423,24 +431,28 @@ class MP1Test {
         assertThat(virtualResults.all { it.virtual }).isTrue()
 
         // Test that location:union only returns events at union
-        assertThat(unionResults.all {
-            it.location.contains("union", ignoreCase = true)
-        }).isTrue()
+        assertThat(
+            unionResults.all {
+                it.location.contains("union", ignoreCase = true)
+            },
+        ).isTrue()
 
         // Test combining search term with virtual filter
         val exhibitVirtual = SUMMARIES.search("exhibit virtual:true")
         assertThat(exhibitVirtual.all { it.virtual }).isTrue()
-        assertThat(exhibitVirtual.all {
-            it.title.contains("exhibit", ignoreCase = true) ||
-            it.location.contains("exhibit", ignoreCase = true)
-        }).isTrue()
+        assertThat(
+            exhibitVirtual.all {
+                it.title.contains("exhibit", ignoreCase = true) ||
+                    it.location.contains("exhibit", ignoreCase = true)
+            },
+        ).isTrue()
 
         // Test with custom controlled data
         val customList = listOf(
             Summary("1", "Coffee Shop", "2025-10-15T10:00:00Z", "Union", false),
             Summary("2", "Virtual Coffee", "2025-10-15T11:00:00Z", "Online", true),
             Summary("3", "Tea Time", "2025-10-15T12:00:00Z", "Union", false),
-            Summary("4", "Virtual Meeting", "2025-10-15T13:00:00Z", "Zoom", true)
+            Summary("4", "Virtual Meeting", "2025-10-15T13:00:00Z", "Zoom", true),
         )
 
         // Test location:union filter
@@ -492,7 +504,7 @@ class MP1Test {
         // my tests
 
         // Find two consecutive events with the same start time to verify alphabetical sorting
-        val sameTimeIndex =  (0 until todayEvents.size - 1).find { i ->
+        val sameTimeIndex = (0 until todayEvents.size - 1).find { i ->
             todayEvents[i].start == todayEvents[i + 1].start
         }
 

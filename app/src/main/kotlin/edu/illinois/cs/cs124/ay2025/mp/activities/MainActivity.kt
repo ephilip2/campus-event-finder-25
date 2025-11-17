@@ -23,7 +23,9 @@ import java.time.ZonedDateTime
  * STEP 3: MainActivity is created after EventableApplication finishes initializing.
  * This is the main screen users see - displays a list of upcoming event summaries.
  */
-class MainActivity : Activity(), SearchView.OnQueryTextListener {
+class MainActivity :
+    Activity(),
+    SearchView.OnQueryTextListener {
 
     // List of event summaries to display (starts empty until loaded from server)
     private var summaries: List<Summary> = emptyList()
@@ -34,6 +36,7 @@ class MainActivity : Activity(), SearchView.OnQueryTextListener {
     private var todayButtonClicked = false
     private var virtualButtonClicked = false
     private var currentSearchQuery: String = ""
+
     /**
      * STEP 3: Called when the activity is first created.
      * This is where we set up the UI layout and initialize views.

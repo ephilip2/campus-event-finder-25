@@ -26,6 +26,7 @@ object Server : Dispatcher() {
     private val logger: Logger = Logger.getLogger(Server::class.java.name)
 
     private val summaries: MutableList<Summary> = mutableListOf()
+    private val events: MutableMap<String, EventData> = mutableMapOf()
 
     @Throws(JsonProcessingException::class)
     private fun getSummaries(): MockResponse {
@@ -46,6 +47,12 @@ object Server : Dispatcher() {
         return makeOKJSONResponse(objectMapper.writeValueAsString(filteredSummaries))
     }
 
+    @Throws(JsonProcessingException::class)
+    private fun getEvent(id: String): MockResponse {
+        val event = events[id] ?: return httpNotFound
+        return makeOKJSONResponse(objectMapper.writeValueAsString(event))
+    }
+
     @Suppress("ReturnCount")
     override fun dispatch(request: RecordedRequest): MockResponse {
         if (request.path == null || request.method == null) {
@@ -62,6 +69,14 @@ object Server : Dispatcher() {
                 path == "/reset" && method == "GET" ->
                     makeOKJSONResponse("200: OK")
                 path == "/summary" && method == "GET" -> getSummaries()
+                path.startsWith("/event/") && method == "GET" -> {
+                    val id = path.removePrefix("/event/")
+                    if (id.isEmpty()) {
+                        httpNotFound
+                    } else {
+                        getEvent(id)
+                    }
+                }
                 else ->
                     httpNotFound
             }
@@ -84,6 +99,7 @@ object Server : Dispatcher() {
 
                 val summary = Summary(eventData)
                 summaries.add(summary)
+                events[eventData.id] = eventData
             }
         } catch (e: JsonProcessingException) {
             logger.log(Level.SEVERE, "Loading data failed", e)
