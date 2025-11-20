@@ -244,7 +244,9 @@ class MP2Test {
             startActivity<EventActivity>(intent) { activity ->
                 pause()
 
-                // Add your tests here
+                onView(first(withText(containsString(event.title)))).check(matches(isDisplayed()))
+                onView(first(withText(containsString(event.description)))).check(matches(isDisplayed()))
+                onView(first(withText(containsString(event.location)))).check(matches(isDisplayed()))
 
                 try {
                     val startTime = ZonedDateTime.parse(event.start)
