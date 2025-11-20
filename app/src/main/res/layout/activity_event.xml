@@ -41,7 +41,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
+            android:layout_marginBottom="16dp"
             tools:text="Event description goes here" />
+
+        <TextView
+            android:id="@+id/event_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            android:autoLink="web"
+            tools:text="https://example.com" />
+
+        <TextView
+            android:id="@+id/event_source"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp"
+            tools:text="Event source" />
+
+        <TextView
+            android:id="@+id/event_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:layout_marginBottom="16dp"
+            tools:text="Category 1, Category 2" />
 
         <ToggleButton
             android:id="@+id/favorite_toggle"

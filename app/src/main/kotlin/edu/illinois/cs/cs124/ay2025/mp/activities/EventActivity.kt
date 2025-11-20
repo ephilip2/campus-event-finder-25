@@ -44,6 +44,15 @@ class EventActivity : Activity() {
 
                     // Set description
                     findViewById<TextView>(R.id.event_description).text = event.description
+
+                    // Set URL
+                    findViewById<TextView>(R.id.event_url).text = event.url
+
+                    // Set source
+                    findViewById<TextView>(R.id.event_source).text = event.source
+
+                    // Set categories (join list into comma-separated string)
+                    findViewById<TextView>(R.id.event_categories).text = event.categories.joinToString(", ")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading event details", e)
