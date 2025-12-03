@@ -8,6 +8,7 @@ import edu.illinois.cs.cs124.ay2025.mp.helpers.CHECK_SERVER_RESPONSE
 import edu.illinois.cs.cs124.ay2025.mp.helpers.getTimeProvider
 import edu.illinois.cs.cs124.ay2025.mp.helpers.objectMapper
 import edu.illinois.cs.cs124.ay2025.mp.models.EventData
+import edu.illinois.cs.cs124.ay2025.mp.models.Favorite
 import edu.illinois.cs.cs124.ay2025.mp.models.Summary
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -27,6 +28,7 @@ object Server : Dispatcher() {
 
     private val summaries: MutableList<Summary> = mutableListOf()
     private val events: MutableMap<String, EventData> = mutableMapOf()
+    private val favorites: MutableMap<String, Boolean> = mutableMapOf()
 
     @Throws(JsonProcessingException::class)
     private fun getSummaries(): MockResponse {
@@ -53,6 +55,32 @@ object Server : Dispatcher() {
         return makeOKJSONResponse(objectMapper.writeValueAsString(event))
     }
 
+    @Throws(JsonProcessingException::class)
+    private fun getFavorite(id: String): MockResponse {
+        val isFavorite = favorites[id] ?: false
+        val favorite = Favorite(id, isFavorite)
+        return makeOKJSONResponse(objectMapper.writeValueAsString(favorite))
+    }
+
+    @Throws(JsonProcessingException::class)
+    private fun postFavorite(request: RecordedRequest): MockResponse {
+        val body = request.body.readUtf8()
+        if (body.isEmpty()) {
+            return httpBadRequest
+        }
+        val favoriteRequest: JsonNode = objectMapper.readTree(body)
+        val id = favoriteRequest.get("id")?.asText()
+        val isFavorite = favoriteRequest.get("favorite")?.asBoolean()
+
+        if (id == null || isFavorite == null) {
+            return httpBadRequest
+        }
+
+        favorites[id] = isFavorite
+        val favorite = Favorite(id, isFavorite)
+        return makeOKJSONResponse(objectMapper.writeValueAsString(favorite))
+    }
+
     @Suppress("ReturnCount")
     override fun dispatch(request: RecordedRequest): MockResponse {
         if (request.path == null || request.method == null) {
@@ -77,6 +105,15 @@ object Server : Dispatcher() {
                         getEvent(id)
                     }
                 }
+                path.startsWith("/favorite/") && method == "GET" -> {
+                    val id = path.removePrefix("/favorite/")
+                    if (id.isEmpty()) {
+                        httpNotFound
+                    } else {
+                        getFavorite(id)
+                    }
+                }
+                path == "/favorite" && method == "POST" -> postFavorite(request)
                 else ->
                     httpNotFound
             }

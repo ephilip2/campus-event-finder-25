@@ -6,9 +6,12 @@ import edu.illinois.cs.cs124.ay2025.mp.application.SERVER_URL
 import edu.illinois.cs.cs124.ay2025.mp.helpers.ResultMightThrow
 import edu.illinois.cs.cs124.ay2025.mp.helpers.objectMapper
 import edu.illinois.cs.cs124.ay2025.mp.models.Event
+import edu.illinois.cs.cs124.ay2025.mp.models.Favorite
 import edu.illinois.cs.cs124.ay2025.mp.models.Summary
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -62,6 +65,65 @@ object Client {
                     val responseBody = response.body.string()
                     val event: Event = objectMapper.readValue(responseBody, Event::class.java)
                     callback(ResultMightThrow(event))
+                }
+            } catch (e: IOException) {
+                callback(ResultMightThrow(e))
+            }
+        }
+    }
+
+    fun getFavorite(id: String, callback: (ResultMightThrow<Favorite>) -> Any?) {
+        executor.execute {
+            try {
+                val request = Request.Builder()
+                    .url("$SERVER_URL/favorite/$id")
+                    .get()
+                    .build()
+
+                httpClient.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        callback(
+                            ResultMightThrow(IOException("Unexpected response code: ${response.code}")),
+                        )
+                        return@execute
+                    }
+
+                    val responseBody = response.body.string()
+                    val favorite: Favorite = objectMapper.readValue(responseBody, Favorite::class.java)
+                    callback(ResultMightThrow(favorite))
+                }
+            } catch (e: IOException) {
+                callback(ResultMightThrow(e))
+            }
+        }
+    }
+
+    fun setFavorite(id: String, isFavorite: Boolean, callback: (ResultMightThrow<Favorite>) -> Any?) {
+        executor.execute {
+            try {
+                val favoriteRequest = objectMapper.createObjectNode()
+                favoriteRequest.put("id", id)
+                favoriteRequest.put("favorite", isFavorite)
+
+                val jsonBody = objectMapper.writeValueAsString(favoriteRequest)
+                val requestBody = jsonBody.toRequestBody("application/json; charset=utf-8".toMediaType())
+
+                val request = Request.Builder()
+                    .url("$SERVER_URL/favorite/")
+                    .post(requestBody)
+                    .build()
+
+                httpClient.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        callback(
+                            ResultMightThrow(IOException("Unexpected response code: ${response.code}")),
+                        )
+                        return@execute
+                    }
+
+                    val responseBody = response.body.string()
+                    val favorite: Favorite = objectMapper.readValue(responseBody, Favorite::class.java)
+                    callback(ResultMightThrow(favorite))
                 }
             } catch (e: IOException) {
                 callback(ResultMightThrow(e))
