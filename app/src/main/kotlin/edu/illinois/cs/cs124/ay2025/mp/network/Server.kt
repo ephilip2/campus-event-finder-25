@@ -62,6 +62,11 @@ object Server : Dispatcher() {
         return makeOKJSONResponse(objectMapper.writeValueAsString(favorite))
     }
 
+    private fun reset(): MockResponse {
+        favorites.clear()
+        return makeOKJSONResponse("200: OK")
+    }
+
     @Throws(JsonProcessingException::class)
     private fun postFavorite(request: RecordedRequest): MockResponse {
         val body = request.body.readUtf8()
@@ -72,8 +77,12 @@ object Server : Dispatcher() {
         val id = favoriteRequest.get("id")?.asText()
         val isFavorite = favoriteRequest.get("favorite")?.asBoolean()
 
-        if (id == null || isFavorite == null) {
+        if (id == null || isFavorite == null || id.isEmpty()) {
             return httpBadRequest
+        }
+
+        if (!events.containsKey(id)) {
+            return httpNotFound
         }
 
         favorites[id] = isFavorite
@@ -94,8 +103,7 @@ object Server : Dispatcher() {
             return when {
                 path.isEmpty() && method == "GET" ->
                     makeOKJSONResponse(CHECK_SERVER_RESPONSE)
-                path == "/reset" && method == "GET" ->
-                    makeOKJSONResponse("200: OK")
+                path == "/reset" && method == "GET" -> reset()
                 path == "/summary" && method == "GET" -> getSummaries()
                 path.startsWith("/event/") && method == "GET" -> {
                     val id = path.removePrefix("/event/")
