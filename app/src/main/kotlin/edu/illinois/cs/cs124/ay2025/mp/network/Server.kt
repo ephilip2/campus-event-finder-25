@@ -57,6 +57,9 @@ object Server : Dispatcher() {
 
     @Throws(JsonProcessingException::class)
     private fun getFavorite(id: String): MockResponse {
+        if (!events.containsKey(id)) {
+            return httpNotFound
+        }
         val isFavorite = favorites[id] ?: false
         val favorite = Favorite(id, isFavorite)
         return makeOKJSONResponse(objectMapper.writeValueAsString(favorite))
