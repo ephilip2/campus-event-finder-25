@@ -72,7 +72,7 @@ object Client {
         }
     }
 
-    fun getFavorite(id: String, callback: (ResultMightThrow<Favorite>) -> Any?) {
+    fun getFavorite(id: String, callback: (ResultMightThrow<Boolean>) -> Any?) {
         executor.execute {
             try {
                 val request = Request.Builder()
@@ -90,7 +90,7 @@ object Client {
 
                     val responseBody = response.body.string()
                     val favorite: Favorite = objectMapper.readValue(responseBody, Favorite::class.java)
-                    callback(ResultMightThrow(favorite))
+                    callback(ResultMightThrow(favorite.favorite))
                 }
             } catch (e: IOException) {
                 callback(ResultMightThrow(e))
@@ -98,7 +98,7 @@ object Client {
         }
     }
 
-    fun setFavorite(id: String, isFavorite: Boolean, callback: (ResultMightThrow<Favorite>) -> Any?) {
+    fun setFavorite(id: String, isFavorite: Boolean, callback: (ResultMightThrow<Boolean>) -> Any?) {
         executor.execute {
             try {
                 val favoriteRequest = objectMapper.createObjectNode()
@@ -123,7 +123,7 @@ object Client {
 
                     val responseBody = response.body.string()
                     val favorite: Favorite = objectMapper.readValue(responseBody, Favorite::class.java)
-                    callback(ResultMightThrow(favorite))
+                    callback(ResultMightThrow(favorite.favorite))
                 }
             } catch (e: IOException) {
                 callback(ResultMightThrow(e))
