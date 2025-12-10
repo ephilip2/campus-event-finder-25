@@ -1,7 +1,13 @@
 package edu.illinois.cs.cs124.ay2025.mp.models
 
-open class Summary(val id: String, val title: String, val start: String, val location: String, val virtual: Boolean) :
-    Comparable<Summary> {
+open class Summary(
+    val id: String,
+    val title: String,
+    val start: String,
+    val location: String,
+    val virtual: Boolean,
+    val favorite: Boolean = false,
+) : Comparable<Summary> {
 
     constructor(eventData: EventData) : this(
         id = eventData.id,
@@ -9,6 +15,7 @@ open class Summary(val id: String, val title: String, val start: String, val loc
         start = eventData.start,
         location = eventData.location,
         virtual = eventData.virtual,
+        favorite = false,
     )
 
     override fun equals(other: Any?) = when {
@@ -29,6 +36,16 @@ fun List<Summary>.filterVirtual(isVirtual: Boolean): List<Summary> {
     var list = mutableListOf<Summary>()
     for (summary in this) {
         if (summary.virtual == isVirtual) {
+            list += summary
+        }
+    }
+    return list
+}
+
+fun List<Summary>.filterFavorites(isFavorite: Boolean): List<Summary> {
+    var list = mutableListOf<Summary>()
+    for (summary in this) {
+        if (summary.favorite == isFavorite) {
             list += summary
         }
     }

@@ -13,6 +13,7 @@ import edu.illinois.cs.cs124.ay2025.mp.R
 import edu.illinois.cs.cs124.ay2025.mp.adapters.SummaryListAdapter
 import edu.illinois.cs.cs124.ay2025.mp.helpers.getTimeProvider
 import edu.illinois.cs.cs124.ay2025.mp.models.Summary
+import edu.illinois.cs.cs124.ay2025.mp.models.filterFavorites
 import edu.illinois.cs.cs124.ay2025.mp.models.filterTime
 import edu.illinois.cs.cs124.ay2025.mp.models.filterVirtual
 import edu.illinois.cs.cs124.ay2025.mp.models.search
@@ -36,6 +37,7 @@ class MainActivity :
 
     private var todayButtonClicked = false
     private var virtualButtonClicked = false
+    private var starredButtonClicked = false
     private var currentSearchQuery: String = ""
 
     /**
@@ -73,6 +75,15 @@ class MainActivity :
             WindowInsets.CONSUMED
         }
 
+        // Set up filter buttons and search bar
+        setupFilterButtons()
+
+        // Set up the search bar
+        val searchView: SearchView = findViewById(R.id.search)
+        searchView.setOnQueryTextListener(this)
+    }
+
+    private fun setupFilterButtons() {
         // Set up the calendar button (today filter)
         val todayButton: ToggleButton = findViewById(R.id.todayButton)
         todayButton.isChecked = true
@@ -80,13 +91,11 @@ class MainActivity :
         todayButtonClicked = true
 
         todayButton.setOnCheckedChangeListener { button, isChecked ->
-            // Update button appearance
             if (isChecked) {
                 button.alpha = 1.0f
             } else {
                 button.alpha = 0.3f
             }
-            // For now, just log the state change
             Log.d(TAG, "Today button toggled: $isChecked")
             todayButtonClicked = isChecked
             updateDisplayedSummaries()
@@ -99,21 +108,32 @@ class MainActivity :
         virtualButtonClicked = false
 
         virtualButton.setOnCheckedChangeListener { button, isChecked ->
-            // Update button appearance
             if (isChecked) {
                 button.alpha = 1.0f
             } else {
                 button.alpha = 0.3f
             }
-            // Update the filter state and refresh the displayed summaries
             Log.d(TAG, "Virtual button toggled: $isChecked")
             virtualButtonClicked = isChecked
             updateDisplayedSummaries()
         }
 
-        // Set up the search bar
-        val searchView: SearchView = findViewById(R.id.search)
-        searchView.setOnQueryTextListener(this)
+        // Set up the starred button (favorites filter)
+        val starredButton: ToggleButton = findViewById(R.id.starredButton)
+        starredButton.isChecked = false
+        starredButton.alpha = 0.3f
+        starredButtonClicked = false
+
+        starredButton.setOnCheckedChangeListener { button, isChecked ->
+            if (isChecked) {
+                button.alpha = 1.0f
+            } else {
+                button.alpha = 0.3f
+            }
+            Log.d(TAG, "Starred button toggled: $isChecked")
+            starredButtonClicked = isChecked
+            updateDisplayedSummaries()
+        }
     }
 
     /**
@@ -182,6 +202,11 @@ class MainActivity :
         // Apply virtual filter if the virtual button is checked
         if (virtualButtonClicked) {
             filteredSummaries = filteredSummaries.filterVirtual(true)
+        }
+
+        // Apply starred/favorites filter if the starred button is checked
+        if (starredButtonClicked) {
+            filteredSummaries = filteredSummaries.filterFavorites(true)
         }
 
         // Apply search filter if there's a search query

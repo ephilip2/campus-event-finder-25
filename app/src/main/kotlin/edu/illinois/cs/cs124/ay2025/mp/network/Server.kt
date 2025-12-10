@@ -45,6 +45,10 @@ object Server : Dispatcher() {
                     true
                 }
             }
+            .map { summary ->
+                val isFavorite = favorites[summary.id] ?: false
+                Summary(summary.id, summary.title, summary.start, summary.location, summary.virtual, isFavorite)
+            }
 
         return makeOKJSONResponse(objectMapper.writeValueAsString(filteredSummaries))
     }
