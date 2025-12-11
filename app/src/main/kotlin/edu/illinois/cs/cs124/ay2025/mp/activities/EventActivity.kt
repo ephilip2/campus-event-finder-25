@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.ToggleButton
 import edu.illinois.cs.cs124.ay2025.mp.R
 import edu.illinois.cs.cs124.ay2025.mp.network.Client
 import java.time.Instant
@@ -56,6 +57,42 @@ class EventActivity : Activity() {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading event details", e)
+            }
+        }
+
+        // Load and set up the favorite button
+        val starredButton: ToggleButton = findViewById(R.id.starredButton)
+
+        // Load the current favorite status
+        Client.getFavorite(eventId) { result ->
+            try {
+                val isFavorite = result.value
+                runOnUiThread {
+                    starredButton.isChecked = isFavorite
+                    starredButton.alpha = if (isFavorite) 1.0f else 0.3f
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading favorite status", e)
+            }
+        }
+
+        // Set up the favorite button click listener
+        starredButton.setOnCheckedChangeListener { button, isChecked ->
+            button.alpha = if (isChecked) 1.0f else 0.3f
+
+            // Save the favorite status to the server
+            Client.setFavorite(eventId, isChecked) { result ->
+                try {
+                    val savedStatus = result.value
+                    Log.d(TAG, "Favorite status saved: $savedStatus for event $eventId")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error saving favorite status", e)
+                    // Revert the button state if save failed
+                    runOnUiThread {
+                        button.isChecked = !isChecked
+                        button.alpha = if (!isChecked) 1.0f else 0.3f
+                    }
+                }
             }
         }
     }
