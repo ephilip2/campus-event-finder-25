@@ -1,28 +1,28 @@
 # Campus Event Finder App
 
-Android app built in Kotlin to help users find campus events by date and save events they are interested in.
+Android app built in Kotlin to help users discover campus events by date and save events they are interested in.
 
 ## Features
-- View events for a specific day
-- Filter and browse available events
+- Browse events by day
+- Filter and explore available events
 - Save and manage favorite events
-- Automatically load saved favorite status when viewing events
+- Automatically load favorite status when viewing event details
 
 ## Tech Stack
 - Kotlin
 - Android Studio
 - Gradle
-- Git (version control)
+- Git
 
 ## Overview
-This app was developed as part of a semester-long project in CS 124 at the University of Illinois Urbana-Champaign. The project was built incrementally through multiple checkpoints, focusing on building a functional and user-friendly Android application.
+This project was developed as part of a semester-long machine project in CS 124 at the University of Illinois Urbana-Champaign. The app was built incrementally through multiple checkpoints, focusing on creating a functional and user-friendly Android application.
 
 ## What I Learned
-- Building Android applications using Kotlin
-- Working with activities and app navigation
-- Managing state (such as favorites) across different views
+- Building Android apps using Kotlin
+- Structuring apps with activities and navigation
+- Managing state across screens (favorites feature)
 - Using Git for version control and iterative development
-- Debugging and improving app functionality over time
+- Debugging and improving features over time
 
 ## Notes
-Some development and debugging were assisted with AI tools (Claude), while maintaining understanding of the underlying logic and implementation.
+Some development and debugging were assisted with AI tools (Claude), while maintaining understanding of the underlying implementation.
