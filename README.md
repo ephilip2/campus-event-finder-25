@@ -7,6 +7,7 @@ Android app built in Kotlin to help users discover campus events by date and sav
 - Filter and explore available events
 - Save and manage favorite events
 - Automatically load favorite status when viewing event details
+- Toggle between virtual and in-person events for each day
 
 ## Tech Stack
 - Kotlin
